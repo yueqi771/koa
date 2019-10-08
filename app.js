@@ -1,5 +1,6 @@
 const Koa = require('koa');
 const Router = require('koa-router');
+const bodyParser = require('koa-bodyparser')
 const app = new Koa();
 const router = new Router({
     prefix: '/users'
@@ -15,7 +16,11 @@ const auth = async (ctx, next) => {
 }
 
 router.get('/', auth, (ctx) => {
-    ctx.body = `这里是用户列表页`
+    // 设置响应头
+    ctx.set('Allow', 'GET, POSt')
+    ctx.body = [
+        {}
+    ]
 })
 
 router.get('/:id', auth, (ctx) => {
@@ -29,6 +34,7 @@ router.post('/', auth, (ctx) => {
 app.use(router.routes());
 // 所有的接口支持options请求
 app.use(router.allowedMethods());
+app.use(bodyParser())
 
 app.listen(3000, '0.0.0.0', () => {
     console.log('server is listenint on 3000')
