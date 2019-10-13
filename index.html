@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <div class="wrapper">
+        <p class='start'>开始录音</p>
+        <p class='stop'>结束录音</p>
+
+        <div class="content">
+            <p class="title">录音内容</p>
+            <p class="text">...</p>
+        </div>  
+
+    </div>
+</body>
+<script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
+<script src="https://cdn.bootcss.com/annyang/2.6.1/annyang.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/SpeechKITT/1.0.0/speechkitt.min.js"></script>
+
+<script>
+    window.onload = function () {
+        var recognition = new webkitSpeechRecognition();
+
+        // 开启
+
+        recognition.lang = 'cmn-Hans-CN'; //普通话 (中国大陆)
+        recognition.continuous = true;
+
+
+        $('.start').on('click', () => {
+            alert('开始录音');
+            recognition.start();
+
+        });
+
+        $('.stop').on('click', () => {
+            alert('结束录音');
+            recognition.stop();
+
+        });
+
+        // 开启
+        recognition.onresult = function(event) { 
+            console.log(event);
+            $('.text').html(event.results[0][0].transcript)
+        }
+    }
+    
+</script>
+</html>
