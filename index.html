@@ -24,7 +24,9 @@
 
 <script>
     window.onload = function () {
+        /*
         var recognition = new webkitSpeechRecognition();
+        
 
         // 开启
 
@@ -48,6 +50,229 @@
         recognition.onresult = function(event) { 
             console.log(event);
             $('.text').html(event.results[0][0].transcript)
+        }
+        */
+
+        
+
+        var recognition = new SpeechKITT({
+            lang: 'cmn-Hans-CN',
+            continuous: true,
+            interimResults: true,
+            onresult: (result) => {
+                console.log('识别结果: ', result)
+            }
+        });
+
+        recognition.start();
+
+       
+        // $('.start').on('click', () => {
+        //     alert('开始录音');
+        //     recognition.start();
+        // });
+    }
+
+    class SpeechKITT {
+        // 当前实例
+        instance = null;
+
+        // 全局事件
+        event = null
+
+        // 语音识别配置
+        options = {
+            lang: "en-US",
+            continuous: false,
+            onresult: () => {
+
+            }
+        };
+
+        // 识别语音的次数
+        count = 0;
+
+        // 识别语音结果
+        result = {
+            current: '',
+            all: []
+        }
+
+        constructor(options) {
+            this.event = new Observer();
+
+            Object.assign(this.options, options);
+
+            this.init();
+
+            // 监听识别结果
+            this.event.subscribe('discernEnd', (result) => {
+                console.log(result)
+                return result;
+            })
+
+        };
+
+        // 初始化方法
+        init() {
+            this.instance = new webkitSpeechRecognition();
+            
+            Object.keys(this.options).forEach((key) => {
+                this.instance[key] = this.options[key]
+            });
+
+            // 初始化事件
+            this.initEvent()
+        }
+
+        // 注册事件
+        initEvent() {
+            const _this = this;
+            this.instance.onsoundstart = function() {
+                console.log('监测到声音了');
+                _this.options.onSoundstart && this.options.onSoundstart.apply(this, [...arguments])
+            };
+
+            this.instance.onsoundend = function() {
+                console.log('监测到声音停止了');
+                _this.options.onSoundend && this.options.onSoundend.apply(this, [...arguments])
+            };
+
+            this.instance.onspeechstart = function() {
+                console.log('开始识别声音了');
+                _this.options.onSpeechstart && this.options.onSpeechstart.apply(this, [...arguments])
+            };
+
+            this.instance.onspeechend = function() {
+                console.log('识别声音结束了');
+                _this.options.onSpeechend && this.options.onSpeechend.apply(this, [...arguments])
+            };
+
+            this.instance.onspeechend = function() {
+                console.log('识别声音结束了');
+                _this.options.onSpeechend && this.options.onSpeechend.apply(this, [...arguments])
+            };
+
+            this.instance.onresult = function(evnet) {
+                console.log('识别声音内容:', event);
+                _this.count = _this.count + 1;
+                // _this.options.onSpeechend && this.options.onSpeechend.apply(this, [...arguments])
+                _this.getSpeechResult(event);
+
+                _this.event.notify('discernEnd', _this.result)
+            };
+        }
+        
+        // 开始录音
+        start() {
+            this.instance.start();
+        }
+
+        // 获取用户返回结果
+        getSpeechResult(e) {
+            return new Promise((resolve, reject) => {
+                // let key = this.count > 1 ? this.count - 2 : this.count - 1;
+                // this.result.all.push(e.results[key][0].transcript);
+                // console.log(e.results[this.count - 1][0].transcript);
+                
+                // this.result = {
+                //     current: e.results[this.count - 1][0].transcript,
+                //     all: this.result.all
+                // }
+
+                let key = this.count > 1 ? this.count - 2 : this.count - 1;
+                this.result.all.push(e.results[0][0].transcript);
+                console.log(e.results[0][0].transcript);
+                
+                this.result = {
+                    current: e.results[0][0].transcript,
+                    all: this.result.all
+                }
+                resolve()
+            })
+        }
+    }
+
+
+    class Observer {
+        // 私有属性， 保存订阅方法
+        _events = {};
+        // 最大允许的订阅数
+        defaultMaxListeners = 30;
+
+        constructor() {
+
+        }
+
+        /**
+         * @func 添加订阅方法
+         * @param type 订阅事件的类型（名字）
+         * @param listener 订阅事件的回调
+         * @param flag 插入顺序
+         */
+        subscribe(type, listener, flag) {
+            // 如果event属性不存在， 那么实例话event
+            if(!this._events) {
+                this._events = Object.create(null);
+            }
+
+            if(this._events[type]) {
+                if(this._events[type].indexOf(listener) > -1) { return }
+                flag ? this._events[type].unshift(listener) : this._events[type].push(listener);
+            }else {
+                this._events[type] = [listener];
+            }
+        }
+
+        /**
+         * @func 通知消息
+         * @param type 需要分发的事件的名字
+         * @param args 回调函数的参数
+         */
+        notify(type, args) {
+            let arg = args ? args : {}
+            if(this._events[type]) {
+                this._events[type].forEach((fn) => fn.call(this, args));
+            }
+        }
+
+        /**
+         * @func 只订阅一次方法
+         * @param type 事件类型
+         * @param listener 事件回调函数
+         */
+        once(type, listener) {
+            const _this = this;
+
+            function only() {
+                listener();
+                _this.removeListener(type, only)
+            }
+
+            only.orign = listener;
+            this.notify(type, only)
+        }
+
+        /**
+         * @func 移除当前绑定的事件
+         * @param type 事件类型
+         * @param listener 事件回调函数
+         */
+        removeListener(type, listener) {
+            if(this._events[type]) {
+                this._events[type].filter((fn) => {
+                    return fn !== listener && fn.orign !== listener
+                })
+            }
+        }
+
+        /**
+         * @func 优先执行订阅
+         * @param type
+         * @param listener
+         */
+        prepend(type, listener) {
+            this.subscribe(type, listener, true)
         }
     }
     
