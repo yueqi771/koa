@@ -24,39 +24,11 @@
 
 <script>
     window.onload = function () {
-        /*
-        var recognition = new webkitSpeechRecognition();
         
-
-        // 开启
-
-        recognition.lang = 'cmn-Hans-CN'; //普通话 (中国大陆)
-        recognition.continuous = true;
-
-
-        $('.start').on('click', () => {
-            alert('开始录音');
-            recognition.start();
-
-        });
-
-        $('.stop').on('click', () => {
-            alert('结束录音');
-            recognition.stop();
-
-        });
-
-        // 开启
-        recognition.onresult = function(event) { 
-            console.log(event);
-            $('.text').html(event.results[0][0].transcript)
-        }
-        */
-
         
-
+        /**/
         var recognition = new SpeechKITT({
-            lang: 'cmn-Hans-CN',
+            lang: 'en-US',
             continuous: true,
             interimResults: true,
             onresult: (result) => {
@@ -153,13 +125,22 @@
                 _this.options.onSpeechend && this.options.onSpeechend.apply(this, [...arguments])
             };
 
+            this.instance.onend = function() {
+                console.log('识别声音结束了');
+                _this.instance.start();
+            };
+
+            this.instance.onrecognizing = function() {
+                console.log('临时识别结果')
+            }
+
             this.instance.onresult = function(evnet) {
-                console.log('识别声音内容:', event);
+                // console.log('识别声音内容:', event);
                 _this.count = _this.count + 1;
                 // _this.options.onSpeechend && this.options.onSpeechend.apply(this, [...arguments])
                 _this.getSpeechResult(event);
-
-                _this.event.notify('discernEnd', _this.result)
+                _this.event.notify('discernEnd', _this.result);
+                // throttle(_this.getSpeechResult(event), 1000)
             };
         }
         
@@ -171,24 +152,38 @@
         // 获取用户返回结果
         getSpeechResult(e) {
             return new Promise((resolve, reject) => {
-                // let key = this.count > 1 ? this.count - 2 : this.count - 1;
-                // this.result.all.push(e.results[key][0].transcript);
-                // console.log(e.results[this.count - 1][0].transcript);
-                
-                // this.result = {
-                //     current: e.results[this.count - 1][0].transcript,
-                //     all: this.result.all
-                // }
 
-                let key = this.count > 1 ? this.count - 2 : this.count - 1;
-                this.result.all.push(e.results[0][0].transcript);
-                console.log(e.results[0][0].transcript);
+                let recognition = Array.from(e.results);
                 
-                this.result = {
-                    current: e.results[0][0].transcript,
-                    all: this.result.all
-                }
-                resolve()
+                recognition.forEach((item, index) => {
+                    
+                    // if(item.isFinal) {
+                        const currentRecognition = Array.from(item['0']);
+
+                        if(item[0].transcript === this.result.current) {
+                            return;
+                        }
+
+                        if(this.result.all.length === 0) {
+                            this.result.all.push(item[0].transcript);
+                        }
+                        
+                        // 如果双层数组同时是最后一项的话， 输出当前语音
+                        this.result.current = item[0].transcript;
+
+                        if(this.result.all.indexOf(item[0].transcript) > -1) {
+                            resolve()
+                            return;
+                        }
+
+                        this.result.all.push(item[0].transcript);
+                        this.event.notify('discernEnd', this.result);
+                        resolve()
+
+                    // }
+
+                })
+
             })
         }
     }
@@ -276,5 +271,17 @@
         }
     }
     
+    function throttle(fn, gapTime) {
+        let _lastTime = null;
+
+        return function () {
+            let _nowTime = + new Date()
+            if (_nowTime - _lastTime > gapTime || !_lastTime) {
+            fn();
+            _lastTime = _nowTime
+            }
+        }
+    }
+
 </script>
 </html>
