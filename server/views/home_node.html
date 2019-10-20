@@ -61,9 +61,11 @@
 <body>
     <h1>这里是node语音识别首页</h1>
 
+    <audio controls autoplay></audio>
     <div class="button start">开始录音</div>
-    <div class="button stop" onclick="stopRecording">停止录音</div>
-    <div class="button upload" onclick="preiviewRecording">上传录音</div>
+    <div class="button stop" >停止录音</div>
+    <div class="button upload">上传录音</div>
+    <div class="button play" >播放录音</div>
 
 </body>
 
@@ -77,10 +79,19 @@
         $('.start').on('click', startRecording);
         $('.stop').on('click', stopRecording)
         $('.upload').on('click', preiviewRecording)
+        $('.play').on('click', playAudio)
+
+
 
     }
 
     let recorder;
+
+    function playAudio() {
+        let audio = document.querySelector('audio');
+
+        recorder.play(audio)
+    } 
 
     // 开始录音
     function startRecording(res) {

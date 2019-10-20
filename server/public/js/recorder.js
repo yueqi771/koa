@@ -58,7 +58,7 @@
                 var sampleBits = Math.min(this.inputSampleBits, this.oututSampleBits);
                 var bytes = this.compress();
                 var dataLength = bytes.length * (sampleBits / 8);
-                var buffer = new ArrayBuffer(44 + dataLength);
+                var buffer = new ArrayBuffer(dataLength);
                 var data = new DataView(buffer);
 
 

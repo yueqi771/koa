@@ -26,7 +26,10 @@ class HomeController {
         console.log('开始识别')    
 
         /** */
-        const result = await speechInstanct.recognize(buffer, 'wav', 16000)
+        const result = await speechInstanct.recognize(buffer, 'pcm', 16000, {
+            dev_pid: 1737, 
+            cuid: '88:e9:fe:75:a7:d3'
+        })
         console.log('return json: ' + JSON.stringify(result));
         console.log('在线语音识别结果: ' + result.result);
 
