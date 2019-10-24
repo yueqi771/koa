@@ -16,6 +16,10 @@
             <p class="text">...</p>
         </div>  
 
+        <input class="inputText" type="textarea" row="70" cols="10" value="my name is deno">
+        <p class="speak">朗读</p>
+        
+
     </div>
 </body>
 <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.js"></script>
@@ -25,8 +29,6 @@
 <script>
     window.onload = function () {
         
-        
-        /**/
         var recognition = new SpeechKITT({
             lang: 'en-US',
             continuous: true,
@@ -36,13 +38,19 @@
             }
         });
 
+        var a = new SpeechSynthesisD({
+            lang: "en-US",
+        })
+
+        $('.speak').on('click', function() {
+            let text = $('.inputText').val()
+            a.speak({
+                text: text
+            });
+        })
+
         recognition.start();
 
-       
-        // $('.start').on('click', () => {
-        //     alert('开始录音');
-        //     recognition.start();
-        // });
     }
 
     class SpeechKITT {
@@ -188,6 +196,55 @@
         }
     }
 
+    // 语音合成
+    class SpeechSynthesisD {
+         // 当前实例
+        instance = null;
+
+        // 语音识别配置
+        options = {
+            lang: "en-US",
+            text: "i dont't konw what your say",
+            role: "Google italiano",
+        };
+
+        // 
+        firstInit = true
+
+        constructor(options) {
+
+            Object.assign(this.options, options);
+
+            this.init();
+
+            this.speak(this.options);
+
+        };
+
+        // 初始化方法
+        init() {
+            this.instance = new SpeechSynthesisUtterance();
+
+            console.log('语音合成支持的语言', this.instance.lang)
+        }
+
+        speak(options) {
+            Object.keys(options).forEach((key) => {
+                this.instance[key] = options[key]
+            });
+
+            if(!this.firstInit) {
+                this._speak()
+            }
+
+            this.firstInit = false;
+        }
+
+        _speak() {
+            speechSynthesis.speak(this.instance);
+        }
+
+    }
 
     class Observer {
         // 私有属性， 保存订阅方法

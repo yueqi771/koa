@@ -80,9 +80,6 @@
         $('.stop').on('click', stopRecording)
         $('.upload').on('click', preiviewRecording)
         $('.play').on('click', playAudio)
-
-
-
     }
 
     let recorder;
@@ -118,7 +115,7 @@
         console.log(fileData.get('file'))
         axios({
             method: 'post',
-            url: '/upload',
+            url: '/recognition',
             data: fileData
         })
     }
